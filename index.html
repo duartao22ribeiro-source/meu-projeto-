@@ -1,0 +1,581 @@
+<title>Queres jantar comigo?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap">
+<style>
+  /* Layout: a one-screen night-time dinner dance. Speech bubble above, five bears on a checked tablecloth floor below. */
+  :root {
+    color-scheme: dark;
+    --night: #2a1140;
+    --dusk: #5a2360;
+    --glow: #a8407a;
+    --linen: #fff3e6;
+    --ink: #2a1140;
+    --muted: #6f4f7d;
+    --tomato: #d8352f;
+    --tomato-deep: #b82520;
+    --bulb: #ffd166;
+    --bulb-dim: #a9783a;
+    --wire: #15081f;
+    --display: "Bagel Fat One", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+    --body: "Nunito", ui-rounded, system-ui, sans-serif;
+    --beat: .9s;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--linen);
+    font-family: var(--body);
+    overflow-x: hidden;
+  }
+  body.yes { --beat: .45s; }
+
+  .stage {
+    position: relative;
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) clamp(170px, min(40vh, 48vw), 420px);
+    background: radial-gradient(90% 70% at 50% 72%, var(--glow) 0%, var(--dusk) 42%, var(--night) 82%);
+  }
+
+  /* String lights */
+  .lights { position: absolute; inset: 0 0 auto; height: 52px; pointer-events: none; }
+  .lights svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .lights polyline { fill: none; stroke: var(--wire); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .bulb {
+    position: absolute;
+    width: 12px; height: 16px;
+    margin-left: -6px;
+    border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+    background: var(--bulb);
+    box-shadow: 0 0 14px 3px var(--bulb);
+    animation: twinkle calc(var(--beat) * 2) steps(1) infinite;
+  }
+  .bulb:nth-child(even) { animation-delay: calc(var(--beat) * -1); }
+  @keyframes twinkle {
+    0%, 49% { background: var(--bulb); box-shadow: 0 0 14px 3px var(--bulb); }
+    50%, 100% { background: var(--bulb-dim); box-shadow: 0 0 4px 0 var(--bulb-dim); }
+  }
+
+  /* The question */
+  .ask {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-block: 60px 26px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .bubble {
+    position: relative;
+    width: min(760px, 100%);
+    display: grid;
+    justify-items: center;
+    gap: clamp(12px, 2.4vh, 22px);
+    padding: clamp(18px, 3.4vh, 34px) clamp(18px, 4vw, 44px);
+    background: var(--linen);
+    color: var(--ink);
+    border-radius: 42px 46px 40px 48px;
+    box-shadow: 0 10px 0 rgba(21, 8, 31, .35);
+    rotate: -1.2deg;
+    text-align: center;
+  }
+  .bubble::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -15px;
+    width: 34px; height: 34px;
+    margin-left: -17px;
+    background: var(--linen);
+    border-radius: 0 0 8px 0;
+    transform: rotate(45deg);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.4rem, min(9vw, 10vh), 5.2rem);
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+  .answers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 60px;
+  }
+  .btn {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 16px 38px;
+    border-radius: 999px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .btn:focus-visible { outline: 3px solid var(--bulb); outline-offset: 3px; }
+  #sim {
+    background: var(--tomato-deep);
+    color: var(--linen);
+    border: 3px solid var(--tomato-deep);
+    box-shadow: 0 5px 0 var(--ink);
+    transition: scale .25s cubic-bezier(.3, 1.7, .5, 1), transform .12s;
+  }
+  #sim:hover { transform: translateY(-2px); }
+  #sim:active { transform: translateY(3px); }
+  #nao {
+    background: var(--linen);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    box-shadow: 0 5px 0 var(--ink);
+  }
+  #nao.loose {
+    position: fixed;
+    left: 0; top: 0;
+    z-index: 20;
+    margin: 0;
+    transition: transform .2s cubic-bezier(.2, 1.2, .4, 1);
+  }
+  #msg {
+    margin: 0;
+    max-width: 46ch;
+    min-height: 1.4em;
+    font-size: clamp(.95rem, 2.2vh, 1.1rem);
+    font-weight: 800;
+    color: var(--muted);
+    text-wrap: balance;
+  }
+  body.yes #msg { color: var(--ink); }
+
+  /* The bears */
+  .room { position: relative; z-index: 1; }
+  .floor-clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .floor {
+    position: absolute;
+    left: -40%; right: -40%; bottom: 0;
+    height: 62%;
+    background: repeating-conic-gradient(var(--tomato) 0 25%, var(--linen) 0 50%) 0 0 / 76px 76px;
+    transform: perspective(340px) rotateX(58deg);
+    transform-origin: 50% 100%;
+  }
+  .dancers {
+    position: absolute;
+    top: 0; bottom: 5%;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex;
+    justify-content: center;
+  }
+  .spot { flex: 1 1 0; min-width: 0; max-width: 240px; height: 100%; }
+  .spot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+  .rig, .arm, .leg, .head { transform-box: view-box; }
+  .rig { transform-origin: 100px 280px; animation: var(--move) calc(var(--beat) * 2) ease-in-out infinite; animation-delay: var(--lag); }
+  .head { transform-origin: 100px 130px; animation: nod calc(var(--beat) * 2) ease-in-out infinite; animation-delay: var(--lag); }
+  .arm-l { transform-origin: 62px 150px; animation: wave-l var(--beat) ease-in-out infinite alternate; animation-delay: var(--lag); }
+  .arm-r { transform-origin: 138px 150px; animation: wave-r var(--beat) ease-in-out infinite alternate; animation-delay: var(--lag); }
+  .leg-l { transform-origin: 78px 235px; animation: kick var(--beat) ease-in-out infinite alternate; animation-delay: var(--lag); }
+  .leg-r { transform-origin: 122px 235px; animation: kick var(--beat) ease-in-out infinite alternate-reverse; animation-delay: var(--lag); }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-8deg); }
+    25%, 75% { transform: translateY(-16px); }
+    50% { transform: rotate(8deg); }
+  }
+  @keyframes hop {
+    0%, 50%, 100% { transform: scale(1.06, .92); }
+    25%, 75% { transform: translateY(-36px) scale(.96, 1.05); }
+  }
+  @keyframes shimmy {
+    0%, 100% { transform: translateX(-14px) rotate(-5deg); }
+    25%, 75% { transform: translateY(-10px); }
+    50% { transform: translateX(14px) rotate(5deg); }
+  }
+  @keyframes nod {
+    0%, 100% { transform: rotate(-9deg); }
+    50% { transform: rotate(9deg); }
+  }
+  @keyframes wave-l { from { transform: rotate(-36deg); } to { transform: rotate(10deg); } }
+  @keyframes wave-r { from { transform: rotate(36deg); } to { transform: rotate(-10deg); } }
+  @keyframes kick { from { transform: rotate(-11deg); } to { transform: rotate(11deg); } }
+
+  /* The surprise behind "Sim": a confirmed table booking with a photo of the date and a rubber stamp. */
+  .surpresa {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow-y: auto;
+    display: grid;
+    place-items: center;
+    padding-block: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: radial-gradient(90% 70% at 50% 40%, var(--glow) 0%, var(--dusk) 45%, var(--night) 85%);
+  }
+  .confetes { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetes i {
+    position: absolute; top: -20px;
+    width: 10px; height: 16px; border-radius: 3px;
+    animation: cair linear infinite;
+  }
+  @keyframes cair { to { transform: translateY(110vh) rotate(720deg); } }
+  .talao {
+    position: relative;
+    width: min(440px, 100%);
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding: 26px clamp(18px, 5vw, 30px) 24px;
+    background: var(--linen);
+    color: var(--ink);
+    border-radius: 18px;
+    box-shadow: 0 10px 0 rgba(21, 8, 31, .35);
+    rotate: .8deg;
+    text-align: center;
+    animation: entrar .5s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
+  @keyframes entrar { from { transform: scale(.6) rotate(-6deg); opacity: .2; } }
+  .talao .etiqueta {
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .surpresa h2 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.2rem, min(10vw, 8vh), 3.4rem);
+    line-height: 1;
+    color: var(--tomato-deep);
+    text-wrap: balance;
+  }
+  .polaroid {
+    position: relative;
+    margin: 4px 0 0;
+    width: min(260px, 78%);
+    padding: 10px 10px 0;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(21, 8, 31, .3);
+    rotate: -3deg;
+  }
+  .polaroid img, .polaroid svg {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    max-width: 100%;
+    object-fit: cover;
+    background: #f3e3f0;
+  }
+  .polaroid figcaption {
+    padding: 8px 4px 10px;
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--ink);
+  }
+  .carimbo {
+    position: absolute;
+    right: -18%;
+    bottom: 22%;
+    padding: 6px 14px;
+    border: 5px solid var(--tomato);
+    border-radius: 10px;
+    color: var(--tomato);
+    font-family: var(--display);
+    font-size: clamp(1.4rem, 7vw, 2rem);
+    line-height: 1;
+    letter-spacing: .04em;
+    background: rgba(255, 243, 230, .78);
+    rotate: -16deg;
+    animation: carimbar .45s .35s cubic-bezier(.3, 1.6, .5, 1) both;
+  }
+  @keyframes carimbar { from { transform: scale(3); opacity: 0; } }
+  .detalhes {
+    width: 100%;
+    margin: 4px 0 0;
+    padding: 12px 0 0;
+    border-top: 2px dashed rgba(42, 17, 64, .25);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    text-align: left;
+    font-size: .95rem;
+  }
+  .detalhes dt { font-weight: 800; color: var(--muted); }
+  .detalhes dd { margin: 0; font-weight: 800; min-width: 0; }
+  .assinatura { margin: 0; font-size: .9rem; color: var(--muted); font-weight: 600; }
+  #voltar {
+    background: var(--linen);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+    font-size: 1.1rem;
+    padding: 12px 26px;
+  }
+
+  @media (max-width: 640px) {
+    .spot-1, .spot-5 { display: none; }
+    .btn { font-size: 1.3rem; padding: 14px 32px; }
+    .floor { background-size: 56px 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rig, .head, .arm, .leg, .bulb { animation: none; }
+    #sim, #nao.loose { transition: none; }
+    .talao, .carimbo { animation: none; }
+  }
+</style>
+
+<main class="stage">
+  <div class="lights" id="lights" aria-hidden="true"></div>
+
+  <section class="ask">
+    <div class="bubble">
+      <h1 id="pergunta">Queres jantar comigo?</h1>
+      <div class="answers" id="answers">
+        <button class="btn" id="sim" type="button">Sim</button>
+        <span id="nao-lugar"><button class="btn" id="nao" type="button">Não</button></span>
+      </div>
+      <p id="msg" aria-live="polite">Os ursos ensaiaram isto a semana toda.</p>
+    </div>
+  </section>
+
+  <section class="room" role="img" aria-label="Ursos a dançar numa pista de toalha aos quadrados">
+    <div class="floor-clip"><div class="floor"></div></div>
+    <div class="dancers" id="dancers"></div>
+  </section>
+</main>
+
+<div class="surpresa" id="surpresa" role="dialog" aria-modal="true" aria-labelledby="surpresa-titulo" hidden>
+  <div class="confetes" id="confetes" aria-hidden="true"></div>
+  <div class="talao">
+    <p class="etiqueta">Reserva confirmada · Nº 0001</p>
+    <h2 id="surpresa-titulo">Está marcado!</h2>
+    <figure class="polaroid">
+      <img id="foto" alt="O teu par para o jantar" hidden>
+      <svg id="foto-urso" viewBox="0 0 200 250" role="img" aria-label="Urso contente à espera da foto">
+        <rect width="200" height="250" fill="#f3e3f0"/>
+        <circle cx="52" cy="62" r="24" fill="#d59a52"/><circle cx="52" cy="62" r="12" fill="#f6dcae"/>
+        <circle cx="148" cy="62" r="24" fill="#d59a52"/><circle cx="148" cy="62" r="12" fill="#f6dcae"/>
+        <ellipse cx="100" cy="250" rx="80" ry="70" fill="#d59a52"/>
+        <ellipse cx="100" cy="112" rx="64" ry="58" fill="#d59a52"/>
+        <ellipse cx="58" cy="128" rx="12" ry="7" fill="#ff8fb1" opacity=".7"/><ellipse cx="142" cy="128" rx="12" ry="7" fill="#ff8fb1" opacity=".7"/>
+        <path d="M70 104q8-10 16 0M114 104q8-10 16 0" fill="none" stroke="#2a1140" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="100" cy="136" rx="28" ry="22" fill="#f6dcae"/>
+        <ellipse cx="100" cy="124" rx="10" ry="7" fill="#2a1140"/>
+        <path d="M86 138q14 22 28 0z" fill="#7d1f35"/>
+        <path d="M100 222c-30-20-34-44-16-50 8-3 14 2 16 8 2-6 8-11 16-8 18 6 14 30-16 50z" fill="#d8352f"/>
+      </svg>
+      <figcaption>O meu par 💘</figcaption>
+      <span class="carimbo" aria-hidden="true">MARCADO</span>
+    </figure>
+    <dl class="detalhes">
+      <dt>Mesa</dt><dd>Para 2, junto à janela</dd>
+      <dt>Traje</dt><dd>Fome obrigatória</dd>
+      <dt>Desistir</dt><dd>Já não dá. Está carimbado.</dd>
+      <dt>Testemunhas</dt><dd>5 ursos, todos sóbrios</dd>
+    </dl>
+    <p class="assinatura">Os ursos já avisaram o chef.</p>
+    <button class="btn" id="voltar" type="button">Ver os ursos outra vez</button>
+  </div>
+</div>
+
+<div id="margens" style="position:fixed;inset:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)"></div>
+
+<script>
+  /* ---------- String lights ---------- */
+  (function () {
+    const swag = f => 6 + 32 * Math.abs(Math.sin(Math.PI * 3 * f));
+    const pts = [];
+    for (let i = 0; i <= 120; i++) pts.push((i / 120 * 100) + ',' + swag(i / 120));
+    let html = '<svg viewBox="0 0 100 48" preserveAspectRatio="none"><polyline points="' + pts.join(' ') + '"/></svg>';
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+      const f = (i + .5) / count;
+      html += '<i class="bulb" style="left:' + (f * 100) + '%;top:' + (swag(f) / 48 * 100) + '%"></i>';
+    }
+    document.getElementById('lights').innerHTML = html;
+  })();
+
+  /* ---------- Bears ---------- */
+  const INK = '#2a1140';
+  const props = {
+    fork: '<g transform="translate(24 98) rotate(-18)"><rect x="-3" y="-52" width="6" height="52" rx="3" fill="#d9dbe6"/><path d="M-10 -74v14q0 10 10 10t10-10v-14M0 -76v24" fill="none" stroke="#d9dbe6" stroke-width="5" stroke-linecap="round"/></g>',
+    spoon: '<g transform="translate(176 98) rotate(16)"><rect x="-3.5" y="-50" width="7" height="50" rx="3" fill="#c98a4b"/><ellipse cy="-64" rx="13" ry="18" fill="#c98a4b"/></g>',
+    rose: '<g transform="translate(176 98) rotate(14)"><rect x="-2.5" y="-48" width="5" height="48" fill="#3e9b62"/><ellipse cx="11" cy="-26" rx="10" ry="5" fill="#3e9b62"/><circle cy="-60" r="15" fill="#d8352f"/><path d="M-8 -60a8 8 0 1 1 8 8" fill="none" stroke="#8f1b18" stroke-width="3" stroke-linecap="round"/></g>',
+    glass: '<g transform="translate(176 96) rotate(10)"><path d="M-13 -58h26q2 26-13 30q-15-4-13-30z" fill="#fff3e6" opacity=".9"/><path d="M-11.5 -46h23q0 15-11.500 18q-11.500-3-11.500-18z" fill="#a51f3d"/><rect x="-2" y="-28" width="4" height="28" fill="#fff3e6"/></g>'
+  };
+  const wear = {
+    bow: '<path d="M100 138L76 125v26zM100 138l24-13v26z" fill="#d8352f"/><circle cx="100" cy="138" r="6" fill="#8f1b18"/>',
+    napkin: '<path d="M68 130h64l-32 46z" fill="#fff3e6"/><path d="M84 130l16 23 16-23" fill="none" stroke="#d8352f" stroke-width="4"/>'
+  };
+  const hats = {
+    chef: '<g fill="#fffaf3"><circle cx="76" cy="20" r="19"/><circle cx="100" cy="10" r="21"/><circle cx="124" cy="20" r="19"/><rect x="72" y="18" width="56" height="26" rx="5"/></g><rect x="72" y="36" width="56" height="7" fill="#e6d7c6"/>',
+    flower: '<g transform="translate(146 44)"><g fill="#ff8fb1"><circle cy="-12" r="8"/><circle cx="11" cy="-4" r="8"/><circle cx="7" cy="10" r="8"/><circle cx="-7" cy="10" r="8"/><circle cx="-11" cy="-4" r="8"/></g><circle r="6" fill="#ffd166"/></g>'
+  };
+
+  function bear(b, i) {
+    const eye = cx => '<circle cx="' + cx + '" cy="76" r="7" fill="' + INK + '"/><circle cx="' + (cx + 2.500) + '" cy="73.500" r="2.400" fill="#fff"/>';
+    return '<div class="spot spot-' + (i + 1) + '" style="--move:' + b.move + ';--lag:' + b.lag + 's">' +
+      '<svg viewBox="0 0 200 290" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g class="rig">' +
+        '<g class="leg leg-l"><ellipse cx="74" cy="248" rx="21" ry="30" fill="' + b.fur + '"/><ellipse cx="68" cy="274" rx="27" ry="14" fill="' + b.fur + '"/><ellipse cx="66" cy="275" rx="15" ry="7" fill="' + b.belly + '"/></g>' +
+        '<g class="leg leg-r"><ellipse cx="126" cy="248" rx="21" ry="30" fill="' + b.fur + '"/><ellipse cx="132" cy="274" rx="27" ry="14" fill="' + b.fur + '"/><ellipse cx="134" cy="275" rx="15" ry="7" fill="' + b.belly + '"/></g>' +
+        '<g class="arm arm-l">' + (b.left ? props[b.left] : '') + '<line x1="62" y1="150" x2="24" y2="100" stroke="' + b.fur + '" stroke-width="27" stroke-linecap="round"/><circle cx="24" cy="100" r="8" fill="' + b.belly + '"/></g>' +
+        '<g class="arm arm-r">' + (b.right ? props[b.right] : '') + '<line x1="138" y1="150" x2="176" y2="100" stroke="' + b.fur + '" stroke-width="27" stroke-linecap="round"/><circle cx="176" cy="100" r="8" fill="' + b.belly + '"/></g>' +
+        '<ellipse cx="100" cy="186" rx="57" ry="66" fill="' + b.fur + '"/><ellipse cx="100" cy="198" rx="36" ry="44" fill="' + b.belly + '"/>' +
+        (b.wear ? wear[b.wear] : '') +
+        '<g class="head">' +
+          '<circle cx="56" cy="44" r="21" fill="' + b.fur + '"/><circle cx="56" cy="44" r="11" fill="' + b.belly + '"/>' +
+          '<circle cx="144" cy="44" r="21" fill="' + b.fur + '"/><circle cx="144" cy="44" r="11" fill="' + b.belly + '"/>' +
+          '<ellipse cx="100" cy="85" rx="55" ry="50" fill="' + b.fur + '"/>' +
+          '<ellipse cx="62" cy="96" rx="11" ry="7" fill="#ff8fb1" opacity=".65"/><ellipse cx="138" cy="96" rx="11" ry="7" fill="#ff8fb1" opacity=".65"/>' +
+          eye(78) + eye(122) +
+          '<ellipse cx="100" cy="105" rx="26" ry="20" fill="' + b.belly + '"/>' +
+          '<ellipse cx="100" cy="95" rx="9.500" ry="6.500" fill="' + INK + '"/>' +
+          '<path d="M87 105q13 22 26 0z" fill="#7d1f35"/><ellipse cx="100" cy="113" rx="5.500" ry="3.500" fill="#ff8fb1"/>' +
+          (b.hat ? hats[b.hat] : '') +
+        '</g>' +
+      '</g></svg></div>';
+  }
+
+  document.getElementById('dancers').innerHTML = [
+    { fur: '#d59a52', belly: '#f6dcae', move: 'hop',    lag: -0.2, left: 'fork', wear: 'bow' },
+    { fur: '#9c5f33', belly: '#e4bd8d', move: 'sway',   lag: -0.5, hat: 'chef', right: 'spoon' },
+    { fur: '#f7f0e7', belly: '#ffffff', move: 'shimmy', lag: 0,    wear: 'bow', right: 'rose' },
+    { fur: '#7c4a29', belly: '#cf9c6a', move: 'sway',   lag: -0.9, left: 'fork', wear: 'napkin' },
+    { fur: '#e3ad6b', belly: '#fbe6c4', move: 'hop',    lag: -0.65, hat: 'flower', right: 'glass' }
+  ].map(bear).join('');
+
+  /* ---------- The button that runs away ---------- */
+  const nao = document.getElementById('nao');
+  const sim = document.getElementById('sim');
+  const msg = document.getElementById('msg');
+  const lugar = document.getElementById('nao-lugar');
+  const margens = document.getElementById('margens');
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const falas = [
+    'Ups, esse botão é tímido.',
+    'Quase!',
+    'Os ursos treinaram-no bem.',
+    'Esse botão não quer nada contigo.',
+    'Sabes que o Sim está mesmo aí, não sabes?'
+  ];
+
+  let solto = false, pos = null, tentativas = 0, respondido = false;
+
+  function limites() {
+    const c = getComputedStyle(margens), r = nao.getBoundingClientRect(), m = 16;
+    const x0 = m + (parseFloat(c.paddingLeft) || 0), y0 = m + (parseFloat(c.paddingTop) || 0);
+    return {
+      x0, y0,
+      x1: Math.max(x0, innerWidth - r.width - m - (parseFloat(c.paddingRight) || 0)),
+      y1: Math.max(y0, innerHeight - r.height - m - (parseFloat(c.paddingBottom) || 0)),
+      w: r.width, h: r.height
+    };
+  }
+  function colocar() { nao.style.transform = 'translate(' + pos.x + 'px,' + pos.y + 'px)'; }
+
+  function soltar() {
+    if (solto) return;
+    const r = nao.getBoundingClientRect(), tinhaFoco = document.activeElement === nao;
+    lugar.style.display = 'inline-block';
+    lugar.style.width = r.width + 'px';
+    lugar.style.height = r.height + 'px';
+    document.body.appendChild(nao);
+    nao.style.transition = 'none';
+    nao.classList.add('loose');
+    pos = { x: r.left, y: r.top };
+    colocar();
+    nao.getBoundingClientRect();
+    nao.style.transition = '';
+    if (tinhaFoco) nao.focus();
+    solto = true;
+  }
+
+  function fugir(px, py) {
+    if (respondido) return;
+    soltar();
+    const b = limites(), s = sim.getBoundingClientRect();
+    const longe = Math.min(280, Math.min(innerWidth, innerHeight) * .45);
+    let melhor = null, melhorD = -1;
+    for (let i = 0; i < 40; i++) {
+      const x = b.x0 + Math.random() * (b.x1 - b.x0), y = b.y0 + Math.random() * (b.y1 - b.y0);
+      if (x < s.right + 12 && x + b.w > s.left - 12 && y < s.bottom + 12 && y + b.h > s.top - 12) continue;
+      const d = Math.hypot(x + b.w / 2 - px, y + b.h / 2 - py);
+      if (d > melhorD) { melhor = { x, y }; melhorD = d; }
+      if (d >= longe) break;
+    }
+    if (melhor) { pos = melhor; colocar(); }
+    tentativas++;
+    msg.textContent = tentativas <= falas.length ? falas[tentativas - 1] : tentativas + ' tentativas. O Sim continua à tua espera.';
+    sim.style.scale = Math.min(1 + tentativas * .03, 1.3);
+  }
+
+  addEventListener('pointermove', e => {
+    if (respondido) return;
+    const r = nao.getBoundingClientRect();
+    const x0 = solto ? pos.x : r.left, y0 = solto ? pos.y : r.top;
+    const dx = Math.max(x0 - e.clientX, 0, e.clientX - (x0 + r.width));
+    const dy = Math.max(y0 - e.clientY, 0, e.clientY - (y0 + r.height));
+    if (Math.hypot(dx, dy) < (e.pointerType === 'mouse' ? 80 : 30)) fugir(e.clientX, e.clientY);
+  });
+  nao.addEventListener('pointerdown', e => { e.preventDefault(); fugir(e.clientX, e.clientY); });
+  nao.addEventListener('click', e => {
+    e.preventDefault();
+    if (e.detail === 0) {
+      const r = nao.getBoundingClientRect();
+      fugir(r.left + r.width / 2, r.top + r.height / 2);
+    }
+  });
+  addEventListener('resize', () => {
+    if (!solto) return;
+    const b = limites();
+    pos = { x: Math.min(Math.max(pos.x, b.x0), b.x1), y: Math.min(Math.max(pos.y, b.y0), b.y1) };
+    colocar();
+  });
+
+  /* ---------- "Sim" shows the surprise ---------- */
+  const surpresa = document.getElementById('surpresa');
+  const voltar = document.getElementById('voltar');
+  const foto = document.getElementById('foto');
+  const fotoUrso = document.getElementById('foto-urso');
+
+  /* Uses foto.jpg beside the page when it exists; otherwise the drawn bear stays. */
+  foto.addEventListener('load', () => { foto.hidden = false; fotoUrso.hidden = true; });
+  foto.src = 'foto.jpg';
+
+  function fechar() {
+    respondido = false;
+    surpresa.hidden = true;
+    document.body.classList.remove('yes');
+    sim.focus();
+  }
+  const confetes = document.getElementById('confetes');
+  const cores = ['#d8352f', '#ffd166', '#ff8fb1', '#fff3e6', '#3e9b62'];
+  sim.addEventListener('click', () => {
+    respondido = true;
+    document.body.classList.add('yes');
+    if (!calmo && !confetes.childElementCount) {
+      let html = '';
+      for (let i = 0; i < 60; i++) {
+        html += '<i style="left:' + (Math.random() * 100) + '%;background:' + cores[i % cores.length] +
+          ';animation-duration:' + (2.5 + Math.random() * 3) + 's;animation-delay:' + (-Math.random() * 5) + 's"></i>';
+      }
+      confetes.innerHTML = html;
+    }
+    surpresa.hidden = false;
+    voltar.focus();
+  });
+  voltar.addEventListener('click', fechar);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !surpresa.hidden) fechar(); });
+</script>
